@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Task Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f7f4ed; /* Soft khaki background */
+            --card-bg: #ffffff;
+            --primary: #8c9663; /* Olive green (khaki accent) */
+            --primary-light: #e8eddf;
+            --secondary: #b8a585; /* Warm tan */
+            --success: #8ca68c; /* Soft sage */
+            --danger: #c96e6c; /* Muted red */
+            --text: #444440; /* Dark gray with warm tone */
+            --text-light: #666;
+            --border: #d8c9a7; /* Light khaki border */
+            --shadow: 0 4px 12px rgba(140, 150, 99, 0.1);
+            --hover-shadow: 0 12px 20px rgba(140, 150, 99, 0.15);
+            --radius: 1rem;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f7f4ed, #ede9d5, #f0eadd);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 2rem 0 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 2.2rem;
+            letter-spacing: -0.02em;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .controls {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.8rem;
+            margin-bottom: 1.8rem;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.6s ease 0.2s forwards;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            background: var(--primary-light);
+            border-radius: 0.8rem;
+            font-size: 1rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stats div {
+            text-align: center;
+        }
+
+        .stats .count {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        .stats .count:hover {
+            transform: scale(1.1);
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .input-group > div {
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            gap: 0.8rem;
+            align-items: stretch;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 0.7rem;
+            font-size: 0.95rem;
+            outline: none;
+            background: #f2f0e5;
+            transition: var(--transition);
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(140, 150, 99, 0.2);
+            background: white;
+        }
+
+        select {
+            padding: 0.9rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 0.7rem;
+            font-size: 0.95rem;
+            background: #f2f0e5;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(140, 150, 99, 0.2);
+            background: white;
+        }
+
+        button {
+            padding: 0.9rem 1.3rem;
+            border: none;
+            border-radius: 0.7rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        button.primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        button.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        button.secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        button.secondary:hover {
+            background-color: #a89a75;
+            transform: translateY(-3px);
+        }
+
+        button.danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        button.danger:hover {
+            background-color: #b85e5c;
+            transform: translateY(-3px);
+        }
+
+        .task-manager {
+            display: flex;
+            gap: 1.8rem;
+            justify-content: stretch;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.7s ease 0.4s forwards;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 280px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+        }
+
+        .column:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .column-header {
+            padding: 1.2rem;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: white;
+            text-align: center;
+            letter-spacing: -0.02em;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+
+        .to-do .column-header {
+            background: linear-gradient(135deg, #8c9663, #7a8450);
+        }
+
+        .in-progress .column-header {
+            background: linear-gradient(135deg, #b8a585, #a89675);
+        }
+
+        .done .column-header {
+            background: linear-gradient(135deg, #8ca68c, #6b8c70);
+        }
+
+        .tasks-list {
+            padding: 1rem;
+            min-height: 300px;
+            height: calc(100vh - 380px);
+            overflow-y: auto;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.8rem;
+            padding: 1rem 1.2rem;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border-left: 5px solid transparent;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.4s ease forwards;
+        }
+
+        .task-item:nth-child(1) { animation-delay: 0.1s; }
+        .task-item:nth-child(2) { animation-delay: 0.2s; }
+        .task-item:nth-child(3) { animation-delay: 0.3s; }
+
+        .task-item:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: var(--shadow);
+        }
+
+        .task-item.dragging {
+            opacity: 0.7;
+            transform: scale(0.95) translateY(-5px) !important;
+            box-shadow: 0 15px 30px rgba(140, 150, 99, 0.2);
+            cursor: grabbing;
+            z-index: 1000;
+        }
+
+        .task-item.high-priority {
+            border-left-color: var(--danger);
+        }
+
+        .task-item.medium-priority {
+            border-left-color: var(--secondary);
+        }
+
+        .task-item.low-priority {
+            border-left-color: var(--success);
+        }
+
+        .task-content {
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .task-actions {
+            opacity: 0;
+            display: flex;
+            transition: opacity 0.3s;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-actions button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 1.4rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .task-actions button:hover {
+            color: var(--danger);
+            background: #fff0f0;
+            transform: scale(1.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-light);
+            padding: 3rem 1rem;
+            font-size: 1rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .task-manager {
+                flex-direction: column;
+            }
+
+            .input-group > div {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls {
+                padding: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Task Manager</h1>
+
+        <div class="controls">
+            <div class="stats">
+                <div>
+                    <div id="todo-count" class="count">1</div>
+                    <div>To Do</div>
+                </div>
+                <div>
+                    <div id="in-progress-count" class="count">2</div>
+                    <div>In Progress</div>
+                </div>
+                <div>
+                    <div id="done-count" class="count">2</div>
+                    <div>Done</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div>
+                    <input type="text" id="new-task-input" placeholder="Enter a new task...">
+                    <select id="priority-select">
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                    <button id="add-task-btn" class="primary">➕ Add Task</button>
+                </div>
+                <div>
+                    <input type="text" id="search-input" placeholder="🔍 Search tasks...">
+                    <button id="search-btn" class="secondary">Search</button>
+                    <button id="clear-btn" class="danger">🧹 Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="task-manager">
+            <div class="column to-do">
+                <div class="column-header">To Do</div>
+                <ul id="to-do-list" class="tasks-list">
+                    <li class="task-item low-priority" draggable="true">
+                        <div class="task-content">Review code changes</div>
+                        <div class="task-actions">
+                            <button class="delete-btn">×</button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="column in-progress">
+                <div class="column-header">In Progress</div>
+                <ul id="in-progress-list" class="tasks-list">
+                    <li class="task-item high-priority" draggable="true">
+                        <div class="task-content">Update documentation</div>
+                        <div class="task-actions">
+                            <button class="delete-btn">×</button>
+                        </div>
+                    </li>
+                    <li class="task-item medium-priority" draggable="true">
+                        <div class="task-content">Complete project proposal</div>
+                        <div class="task-actions">
+                            <button class="delete-btn">×</button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="column done">
+                <div class="column-header">Done</div>
+                <ul id="done-list" class="tasks-list">
+                    <li class="task-item high-priority" draggable="true">
+                        <div class="task-content">Fix critical bug</div>
+                        <div class="task-actions">
+                            <button class="delete-btn">×</button>
+                        </div>
+                    </li>
+                    <li class="task-item low-priority" draggable="true">
+                        <div class="task-content">Organize team meeting</div>
+                        <div class="task-actions">
+                            <button class="delete-btn">×</button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const newTaskInput = document.getElementById('new-task-input');
+        const prioritySelect = document.getElementById('priority-select');
+        const addTaskBtn = document.getElementById('add-task-btn');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const clearBtn = document.getElementById('clear-btn');
+
+        const toDoList = document.getElementById('to-do-list');
+        const inProgressList = document.getElementById('in-progress-list');
+        const doneList = document.getElementById('done-list');
+
+        const todoCount = document.getElementById('todo-count');
+        const inProgressCount = document.getElementById('in-progress-count');
+        const doneCount = document.getElementById('done-count');
+
+        let draggedItem = null;
+
+        function init() {
+            setupEventListeners();
+            updateTaskCounts();
+            setupDragEvents();
+        }
+
+        function setupEventListeners() {
+            addTaskBtn.addEventListener('click', addTask);
+            searchBtn.addEventListener('click', searchTasks);
+            clearBtn.addEventListener('click', clearAllTasks);
+
+            newTaskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addTask();
+            });
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchTasks();
+            });
+
+            searchInput.addEventListener('input', () => {
+                if (searchInput.value === '') resetTaskDisplay();
+            });
+        }
+
+        function setupDragEvents() {
+            removeDragEvents();
+
+            const taskItems = document.querySelectorAll('.task-item');
+            const taskLists = [toDoList, inProgressList, doneList];
+
+            taskItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+
+            taskLists.forEach(list => {
+                list.addEventListener('dragover', handleDragOver);
+                list.addEventListener('drop', handleDrop);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', deleteTask);
+            });
+        }
+
+        function removeDragEvents() {
+            const taskItems = document.querySelectorAll('.task-item');
+            const taskLists = [toDoList, inProgressList, doneList];
+
+            taskItems.forEach(item => {
+                item.removeEventListener('dragstart', handleDragStart);
+                item.removeEventListener('dragend', handleDragEnd);
+            });
+
+            taskLists.forEach(list => {
+                list.removeEventListener('dragover', handleDragOver);
+                list.removeEventListener('drop', handleDrop);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.removeEventListener('click', deleteTask);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (draggedItem && this !== draggedItem) {
+                let targetList = this.classList.contains('task-item') ? this.parentNode : this;
+                targetList.appendChild(draggedItem);
+                updateTaskPriority(draggedItem);
+                updateTaskCounts();
+            }
+        }
+
+        function updateTaskPriority(taskItem) {
+            const parentColumn = taskItem.closest('.column');
+            const priorityClass = parentColumn.className.split(' ')[1];
+
+            taskItem.classList.remove('high-priority', 'medium-priority', 'low-priority');
+
+            if (priorityClass === 'to-do') taskItem.classList.add('low-priority');
+            else if (priorityClass === 'in-progress') taskItem.classList.add('medium-priority');
+            else if (priorityClass === 'done') taskItem.classList.add('high-priority');
+
+            animateTask(taskItem);
+        }
+
+        function animateTask(task) {
+            task.style.opacity = '0';
+            setTimeout(() => {
+                task.style.transition = 'all 0.4s ease';
+                task.style.opacity = '1';
+            }, 10);
+        }
+
+        function addTask() {
+            const taskText = newTaskInput.value.trim();
+            if (!taskText) return;
+
+            const taskItem = document.createElement('li');
+            taskItem.className = `task-item ${prioritySelect.value}-priority`;
+            taskItem.draggable = true;
+            taskItem.innerHTML = `
+                <div class="task-content">${taskText}</div>
+                <div class="task-actions">
+                    <button class="delete-btn">×</button>
+                </div>
+            `;
+
+            taskItem.style.opacity = '0';
+            toDoList.appendChild(taskItem);
+
+            setTimeout(() => {
+                taskItem.style.transition = 'all 0.4s ease';
+                taskItem.style.opacity = '1';
+            }, 10);
+
+            newTaskInput.value = '';
+            prioritySelect.value = 'low';
+            newTaskInput.focus();
+
+            setupDragEvents();
+            updateTaskCounts();
+        }
+
+        function deleteTask(e) {
+            e.stopPropagation();
+            const task = this.closest('.task-item');
+            task.style.opacity = '0';
+            task.style.transform = 'scale(0.9)';
+            setTimeout(() => task.remove(), 300);
+            updateTaskCounts();
+        }
+
+        function searchTasks() {
+            const term = searchInput.value.trim().toLowerCase();
+            if (!term) return resetTaskDisplay();
+
+            document.querySelectorAll('.task-item').forEach(item => {
+                const text = item.querySelector('.task-content').textContent.toLowerCase();
+                item.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        function resetTaskDisplay() {
+            document.querySelectorAll('.task-item').forEach(item => {
+                item.style.display = 'flex';
+            });
+        }
+
+        function clearAllTasks() {
+            if (confirm('Are you sure you want to clear all tasks?')) {
+                document.querySelectorAll('.task-item').forEach(task => {
+                    task.style.opacity = '0';
+                    setTimeout(() => task.remove(), 200);
+                });
+                setTimeout(updateTaskCounts, 300);
+            }
+        }
+
+        function updateTaskCounts() {
+            todoCount.textContent = toDoList.children.length;
+            inProgressCount.textContent = inProgressList.children.length;
+            doneCount.textContent = doneList.children.length;
+            updateEmptyStates();
+        }
+
+        function updateEmptyStates() {
+            const lists = [
+                { list: toDoList, msg: 'No tasks to do' },
+                { list: inProgressList, msg: 'No tasks in progress' },
+                { list: doneList, msg: 'No completed tasks' }
+            ];
+
+            lists.forEach(({ list, msg }) => {
+                const empty = list.querySelector('.empty-state');
+                if (empty) list.removeChild(empty);
+
+                if (list.children.length === 0) {
+                    const el = document.createElement('div');
+                    el.className = 'empty-state';
+                    el.textContent = msg;
+                    list.appendChild(el);
+                }
+            });
+
+            setupDragEvents();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
